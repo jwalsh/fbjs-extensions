@@ -27,8 +27,12 @@ extendInstance(
 	Ajax,
 	{ //Extends the native Facebook Ajax object
 		/*
-		 * Make a request to a remote server. Call the 'success' callback with the result.
-		 * Ex: 	Ajax.Load('JSON','http://...',{ success: function(result){console.log(result.toSource())} }, {'json':test_content})
+		 * Make a request to a remote server.
+		 * Call the 'success' callback with the result.
+		 * Ex: 	Ajax.Load('JSON',
+		 * 'http://...',{ success:
+		 * function(result){console.log(result.toSource())} },
+		 * {'json':test_content})
 		 */
 		Load: function(response_type, action_path, callbacks, post_parameters) {
 			callbacks = Ajax.checkCallbacks(callbacks);
@@ -46,7 +50,8 @@ extendInstance(
 				ajax.responseType = Ajax.RAW;
 				break;
 			default:
-				console.error("Unknow respons format requested. You supplied %s. Supported: 'FBML', 'RAW'", response_type);
+				console.error("Invalid. You supplied %s. "+
+											"Supported: 'FBML', 'RAW'", response_type);
 				return;
 			}
 			ajax.ondone = function(result){
@@ -69,10 +74,14 @@ extendInstance(
 			ajax.post(action_path,post_parameters);
 		},
 		/*
-		 * Make a request to a remote server. Update target_element with result. Calls the 'success' callback with the result
-		 * Ex: Ajax.Update('test1', 'FBML', 'http://...',{ success: function(result){console.log(result)} })
+		 * Make a request to a remote server.
+		 * Update target_element with result.
+		 * Calls the 'success' callback with the result
+		 * Ex: Ajax.Update('test1',
+		 * 'FBML', 'http://...',{ success: function(result){console.log(result)} })
 		 */
-		Update: function(target_element, response_type, action_path, callbacks, post_parameters) {
+		Update: function(target_element, response_type,
+										 action_path, callbacks, post_parameters) {
 			callbacks = Ajax.checkCallbacks(callbacks);
 			var update_element = function(content) {
 				switch(response_type) {
@@ -133,14 +142,21 @@ extendInstance(
 								function(result){
 									wrapper.setInnerXHTML(
 										'<span>'+
-											'<input id="'+target_element+'__value" name="'+target_element+'__value" style="display:none;" type="text" value="'+unescape(result)+'" />'+
-											'<span><span id="'+target_element+'" class="'+classname+'" type="text">'+unescape(result)+'</span></span></span>');
+											'<input id="'+target_element+
+											'__value" name="'+target_element+
+											'__value" style="display:none;" type="text"'+
+											' value="'+unescape(result)+'" />'+
+											'<span><span id="'+target_element+
+											'" class="'+classname+
+											'" type="text">'+unescape(result)+
+											'</span></span></span>');
 								}
 							])
 					}, post_parameters);
 			};
 		},
-		InPlaceTextAreaEditor: function(target_element, action_path, post_parameters) {
+		InPlaceTextAreaEditor:
+		  function(target_element, action_path, post_parameters) {
 			var classname = $(target_element).getClassName() || "";
 
 			this.edit = function() {
@@ -151,7 +167,8 @@ extendInstance(
 
 				var editArea = document.createElement('textarea');
 				editArea.setId(target_element+"__editor");
-				editArea.setValue(value.replace(/<br \/>|<br\/>/g,'\n').replace(/<p>|<\/p>/g,''));
+				editArea.setValue(value.replace(/<br \/>|<br\/>/g,'\n')
+													.replace(/<p>|<\/p>/g,''));
 				editArea.addEventListener('keyup', function() {
 																		autoExpandTextarea(editArea);
 																	});
@@ -207,7 +224,8 @@ extendInstance(
 	});
 
 /*
- * Displays a confirmation dialog. If the user clicks "continue" then callback will be evaluated.
+ * Displays a confirmation dialog.
+ * If the user clicks "continue" then callback will be evaluated.
  * title and message can be strings or fb:js-string objects
  */
 function confirm(title,message,callback) {
@@ -323,7 +341,8 @@ function map(array, block){
 }
 
 /*
- * Collects all elements within the 'element' tree that 'matcher' returns true for
+ * Collects all elements within the 'element' tree that
+ * 'matcher' returns true for
  * For an example, see selectElementsByClass
  */
 function domCollect(element, matcher) {

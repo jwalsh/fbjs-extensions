@@ -7,13 +7,13 @@ function $(element) {
     return element;
 }
 
-function getElementsByName(elementName) {        
+function getElementsByName(elementName) {
     var matcher = function(element) {
-        return (element.getName() === elementName);				
-    };			        
+        return (element.getName() === elementName);
+    };
     return domCollect(document.getRootElement(), matcher);
 }
-function getElementsByClass(classname) {    
+function getElementsByClass(classname) {
     var matcher = function(element) {
         return (element.getClassName() === classname);
     };
@@ -29,10 +29,10 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
      * Ex: 	Ajax.Load('JSON','http://...',{ success: function(result){console.log(result.toSource())} }, {'json':test_content})
      */
     Load: function(response_type, action_path, callbacks, post_parameters) {
-        callbacks = Ajax.checkCallbacks(callbacks);		
+        callbacks = Ajax.checkCallbacks(callbacks);
         var ajax = new Ajax();
         ajax.useLocalProxy = useLocal;
-        
+
         switch(response_type) {
             case 'FBML':
                 ajax.responseType = Ajax.FBML;
@@ -45,23 +45,23 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
                 break;
             default:
                 console.error("Unknow respons format requested. You supplied %s. Supported: 'FBML', 'RAW'", response_type);
-                return;										
+                return;
         }
         ajax.ondone = function(result){
             callbacks.success(result);
             callbacks.complete();
-        }
+        };
         ajax.onerror = function(error_string) {
             callbacks.failure(error_string);
             callbacks.complete();
-        }
-        
-        post_parameters = post_parameters || {}
+        };
+
+      post_parameters = post_parameters || {};
         post_parameters['authenticity_token'] = _token;
 
         if(action_path.indexOf('http') == -1) {
-            action_path = _hostname + action_path;			
-        }                      
+            action_path = _hostname + action_path;
+        }
 
         callbacks.begin();
         ajax.post(action_path,post_parameters);
@@ -71,14 +71,14 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
      * Ex: Ajax.Update('test1', 'FBML', 'http://...',{ success: function(result){console.log(result)} })
      */
     Update: function(target_element, response_type, action_path, callbacks, post_parameters) {
-        callbacks = Ajax.checkCallbacks(callbacks);        
+        callbacks = Ajax.checkCallbacks(callbacks);
         var update_element = function(content) {
             switch(response_type) {
                 case 'FBML':
                     $(target_element).setInnerFBML(content);
                     break;
                 case 'RAW':
-                    $(target_element).setTextValue(content);					
+                    $(target_element).setTextValue(content);
                     break;
                 default:
                     console.log("Unsupported response type "+response_type);
@@ -90,7 +90,7 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
         update_element :
         chainMethods([update_element,callbacks.success]);
 
-        callbacks.success = onsuccess;        
+        callbacks.success = onsuccess;
         Ajax.Load(response_type, action_path, callbacks, post_parameters);
     },
 
@@ -99,9 +99,9 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
         var classname = $(target_element).getClassName() || "";
 
         this.edit = function() {
-            var target = $(target_element);	
-            var wrapper = target.getParentNode();			
-            var dimensions = $(target_element).getDimensions();	
+            var target = $(target_element);
+            var wrapper = target.getParentNode();
+            var dimensions = $(target_element).getDimensions();
             var value = $(target_element+'__value').getValue();
 
             var editArea = document.createElement('input');
@@ -115,30 +115,31 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
             $(target_element+'__value').remove();
             wrapper.removeChild(target);
             wrapper.appendChild(editArea);
-        }
+        };
+
         this.save = function(callbacks){
             var newValue = $(target_element + "__editor").getValue();
             var wrapper = $(target_element + "__editor").getParentNode();
             callbacks = Ajax.checkCallbacks(callbacks);
             Ajax.Load("RAW", action_path + "?raw=" + escape(newValue), {
                 success: chainMethods([
-                    callbacks.success,						
+                    callbacks.success,
                     function(result){
                         wrapper.setInnerXHTML('<span>'+
                             '<input id="'+target_element+'__value" name="'+target_element+'__value" style="display:none;" type="text" value="'+unescape(result)+'" />'+
                             '<span><span id="'+target_element+'" class="'+classname+'" type="text">'+unescape(result)+'</span></span></span>');
                     }
                     ])
-            }, post_parameters)
+											}, post_parameters);
         };
     },
     InPlaceTextAreaEditor: function(target_element, action_path, post_parameters) {
         var classname = $(target_element).getClassName() || "";
-				
+
         this.edit = function() {
-            var target = $(target_element);	
-            var wrapper = target.getParentNode();			
-            var dimensions = $(target_element).getDimensions();	
+            var target = $(target_element);
+            var wrapper = target.getParentNode();
+            var dimensions = $(target_element).getDimensions();
             var value = $(target_element+'__value').getValue();
 
             var editArea = document.createElement('textarea');
@@ -155,39 +156,40 @@ extendInstance(Ajax, { //Extends the native Facebook Ajax object
             wrapper.removeChild(target);
             wrapper.appendChild(editArea);
             autoExpandTextarea(editArea);
-        }
+        };
+
         this.save = function(callbacks){
             var newValue = $(target_element + "__editor").getValue();
             var wrapper = $(target_element + "__editor").getParentNode();
             callbacks = Ajax.checkCallbacks(callbacks);
             Ajax.Load("RAW", action_path + "?raw=" + escape(newValue), {
                 success: chainMethods([
-                    callbacks.success,						
+                    callbacks.success,
                     function(result){
                         wrapper.setInnerXHTML('<span>'+
                             '<textarea id="'+target_element+'__value" name="'+target_element+'__value" style="display:none;">'+unescape(result.replace(/<br \/>|<br\/>/g,'\n').replace(/<p>|<\/p>/g,''))+'</textarea>'+
                             '<div><div id="'+target_element+'" class="'+classname+'" type="text">'+unescape(result)+'</div></div></span>');
                     }
                     ])
-            }, post_parameters)
+											}, post_parameters);
         };
     },
     /*
-     * Pass the data inside of a form to a target url and place the result inside target_element. 
+     * Pass the data inside of a form to a target url and place the result inside target_element.
      * Calls the 'success' callback with the result
      */
     UpdateRemoteForm: function(form_element, target_element, response_type, target_action, callbacks) {
         callbacks = callbacks || {};
         Ajax.Update(target_element, response_type, target_action, callbacks, $(form_element).serialize());
-    },	
+    },
     checkCallbacks:function(callbacks) {
-        callbacks = callbacks || {};		
+        callbacks = callbacks || {};
         var donothing = function(){};
         return callbacks = {
             success: callbacks.success 		|| donothing,
             failure: callbacks.failure		|| donothing,
             begin: callbacks.begin 		|| donothing,
-            complete: callbacks.complete 	|| donothing	
+            complete: callbacks.complete 	|| donothing
         };
     }
 });
@@ -215,7 +217,7 @@ function chainMethods(callbacks) {
         for (var i = 0, l = callbacks.length; i < l; i++) {
             callbacks[i](par1, par2, par3, par4, par5, par6);
         }
-    }
+    };
 }
 
 function extendInstance(instance,hash) {
@@ -231,7 +233,7 @@ var Element = {
     toggle: function() {
         if (this.visible()) {
             this.hide();
-        } else {		
+        } else {
             this.show();
         }
     },
@@ -245,7 +247,7 @@ var Element = {
         this.setStyle({
             display:''
         });
-        return this;	
+        return this;
     },
     remove: function() {
         this.getParentNode().removeChild(this);
@@ -300,9 +302,9 @@ function encodeURIComponent(str) {
 /*
  * Applies block to all elements of an array. Return the array itself.
  */
-function map(array, block){ 
+function map(array, block){
     results = [];
-    for (var i=0,l=array.length;i<l;i++){ 
+    for (var i=0,l=array.length;i<l;i++){
         results.push(block(array[i]));
     }
     return results;
@@ -314,11 +316,11 @@ function map(array, block){
  */
 function domCollect(element, matcher) {
     collection = [];
-    var recurse = function(subelement){		
+    var recurse = function(subelement){
         var nodes = subelement.getChildNodes();
         map(nodes, function(node){
-            if (matcher(node)) {                
-                extendInstance(node,Element)
+            if (matcher(node)) {
+              extendInstance(node,Element);
                 collection.push(node);
             }
             if (node.getFirstChild()) {
